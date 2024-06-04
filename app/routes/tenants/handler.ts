@@ -35,3 +35,47 @@ export async function deleteTenant(tenant_id: string) {
         console.error("Error deleting data");
     }  
 }
+
+export async function createUser(userdata:{user_name: string, password: string}) {
+    try{
+        let usercreatedata: {
+            user_name: string;
+            password: string;
+        } = {
+            user_name: userdata.user_name,
+            password: await Bun.password.hash(userdata.password, {
+                algorithm: 'bcrypt',
+            })
+        };
+
+        const tenant = await prisma.tenant_user.create({data: usercreatedata});
+        if (!tenant) {
+            throw new NotFoundError("Error creating tenant");
+        }
+    } catch (error) {
+        console.error("Error getting data");
+    }   
+}
+
+export async function login(userdata:{user_name: string, password: string}) {
+    try{
+        const user_name = userdata.user_name;
+        const user = await prisma.tenant_user.findFirst({where: {user_name}});
+
+        if(!user) {
+            throw new NotFoundError("Error not found user");
+        } 
+
+        const ismatch = await Bun.password.verify(userdata.password, user.password);
+        if(!ismatch) {
+            throw new Error("Wrong password");
+        }
+
+        return {
+            userId: user.user_id,
+            loggedin: true
+        }
+    } catch (error) {
+        console.error("Error authentication");
+    }   
+}

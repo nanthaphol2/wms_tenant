@@ -17,3 +17,9 @@ model tenant_master {
   tenant_id     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenant_name   String
 }
+
+model tenant_user {
+  user_id     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_name   String
+  password   String
+}
